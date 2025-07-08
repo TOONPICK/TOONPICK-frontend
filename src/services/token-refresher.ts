@@ -2,7 +2,10 @@ import { api } from '@api';
 import TokenManager from '@/services/token-manager';
 import { AxiosRequestConfig, AxiosResponse } from 'axios';
 
-// 실패한 요청 관리 큐
+/**
+ * 토큰 만료 시 실패한 요청을 임시로 저장하는 큐
+ * - 토큰 재발급이 완료되면 큐에 쌓인 요청을 재시도
+ */
 let failedQueue: Array<{
   requestConfig: AxiosRequestConfig;
   resolve: (value: AxiosResponse<any> | PromiseLike<AxiosResponse<any>>) => void;
@@ -10,6 +13,11 @@ let failedQueue: Array<{
 }> = [];
 let isRefreshing = false;
 
+/**
+ * 큐에 쌓인 요청을 일괄 처리 (토큰 재발급 성공/실패 시)
+ * @param error - 토큰 재발급 실패 시 에러
+ * @param token - 새로 발급받은 액세스 토큰 (성공 시)
+ */
 const processQueue = (error: any, token: string | null) => {
   failedQueue.forEach(({ requestConfig, resolve, reject }) => {
     if (token) {
@@ -26,10 +34,10 @@ const processQueue = (error: any, token: string | null) => {
 };
 
 const TokenRefresher = {
-
   /**
-   * @param originalRequest 
-   * @returns 
+   * 액세스 토큰 만료 시 재발급 및 원래 요청 재시도
+   * @param originalRequest - 실패한 원본 요청
+   * @returns 재시도된 API 응답 프라미스
    */
   handleTokenExpiration: async (originalRequest: AxiosRequestConfig) => {
     if (!isRefreshing) {
@@ -48,15 +56,16 @@ const TokenRefresher = {
         isRefreshing = false;
       }
     }
-
+    // 이미 재발급 중이면 큐에 요청 추가 (Promise로 대기)
     return new Promise((resolve, reject) => {
       failedQueue.push({ requestConfig: originalRequest, resolve, reject });
     });
   },
 
   /**
-   * 토큰 재발급
-   * @returns 
+   * 액세스 토큰 재발급 (refresh token 사용)
+   * @returns 새로 발급받은 액세스 토큰 문자열
+   * @throws 재발급 실패 시 에러
    */
   refreshAccessToken: async (): Promise<string> => {
     try {

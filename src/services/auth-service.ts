@@ -1,16 +1,22 @@
 import { api, Response } from '@api';
-import { Routes } from '@constants/routes'
+import { Routes } from '@constants/routes';
 import TokenManager from '@services/token-manager';
 import TokenRefresher from '@services/token-refresher';
 import Logger from '@utils/logger';
 import Cookies from 'js-cookie';
 import { dummyMemberProfile } from '@dummy';
-import { MemberProfile } from '@models/member';
+import handleApiError from '@utils/api-error-handler';
 
 const isDev = process.env.NODE_ENV === 'development';
 
 export const AuthService = {
-  // 로그인
+  /**
+   * 일반 로그인
+   * @param username - 사용자명
+   * @param password - 비밀번호
+   * @param loginCallback - 로그인 성공 시 실행할 콜백
+   * @returns 성공 여부 및 메시지/데이터
+   */
   login: async (username: string, password: string, loginCallback?: () => void): Promise<Response> => {
     if (isDev) {
       loginCallback?.();
@@ -25,17 +31,21 @@ export const AuthService = {
         loginCallback?.();
         return { success: true };
       } else {
-        Logger.error('Login failed: No access token found in response headers');
-        return { success: false, message: 'Login failed: Unable to retrieve access token' };
+        return { success: false, message: '로그인에 실패했습니다: 토큰을 찾을 수 없습니다.' };
       }
     } catch (error: any) {
-      Logger.error('Login error:', error);
-      return { success: false, message: error.response?.data || 'Login failed due to an unknown error' };
+      return handleApiError(error);
     }
   },
 
-  // 회원가입
-  signup: async (username: string, email: string ,password: string): Promise<Response> => {
+  /**
+   * 회원가입
+   * @param username - 사용자명
+   * @param email - 이메일
+   * @param password - 비밀번호
+   * @returns 성공 여부 및 메시지/데이터
+   */
+  signup: async (username: string, email: string, password: string): Promise<Response> => {
     if (isDev) {
       return { success: true, data: dummyMemberProfile };
     }
@@ -49,12 +59,15 @@ export const AuthService = {
       await api.post('/join', joinPayload);
       return { success: true };
     } catch (error: any) {
-      Logger.error('Signup error:', error);
-      return { success: false, message: error.response?.data || 'Signup failed due to an unknown error' };
+      return handleApiError(error);
     }
   },
 
-  // 로그아웃
+  /**
+   * 로그아웃
+   * @param logoutCallback - 로그아웃 성공 시 실행할 콜백
+   * @returns 성공 여부 및 메시지
+   */
   logout: async (logoutCallback?: () => void): Promise<Response> => {
     if (isDev) {
       logoutCallback?.();
@@ -66,19 +79,24 @@ export const AuthService = {
       logoutCallback?.();
       return { success: true };
     } catch (error: any) {
-      Logger.error('Logout error:', error);
-      return { success: false, message: error.response?.data || 'Logout failed due to an unknown error' };
+      return handleApiError(error);
     }
   },
 
-  // 로그인 여부 확인
+  /**
+   * 로그인 여부 확인
+   * @returns true(로그인 상태), false(비로그인)
+   */
   isLoggedIn: (): boolean => {
     if (isDev) return true;
     const accessToken = TokenManager.getAccessToken();
     return !!accessToken && !TokenManager.isAccessTokenExpired(accessToken);
   },
 
-  // 소셜 로그인
+  /**
+   * 소셜 로그인 (카카오/네이버/구글/애플 등)
+   * @param provider - 소셜 로그인 제공자명
+   */
   socialLogin: (provider: string): void => {
     if (isDev) return;
     const redirectUri = window.location.origin + Routes.LOGIN_CALLBACK;
@@ -91,7 +109,11 @@ export const AuthService = {
     window.location.href = loginUrl;
   },
 
-  // 소셜 로그인 콜백 처리
+  /**
+   * 소셜 로그인 콜백 처리 (토큰 재발급 및 저장)
+   * @param loginCallback - 로그인 성공 시 실행할 콜백
+   * @returns 성공 여부 및 메시지/데이터
+   */
   handleSocialLoginCallback: async (loginCallback?: () => void): Promise<Response> => {
     if (isDev) {
       loginCallback?.();
@@ -104,12 +126,10 @@ export const AuthService = {
         loginCallback?.();
         return { success: true };
       } else {
-        Logger.error('Social login callback error: No access token found in response');
-        return { success: false, message: 'Social login failed: No access token found' };
+        return { success: false, message: '소셜 로그인에 실패했습니다: 토큰을 찾을 수 없습니다.' };
       }
     } catch (error: any) {
-      Logger.error('Social login callback error:', error);
-      return { success: false, message: error.response?.data || 'Social login callback failed due to an unknown error' };
+      return handleApiError(error);
     }
   },
 };

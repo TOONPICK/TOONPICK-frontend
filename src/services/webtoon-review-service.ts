@@ -17,7 +17,12 @@ class WebtoonReviewService {
     return WebtoonReviewService.instance;
   }
 
-  // 웹툰 리뷰 생성
+  /**
+   * 웹툰 리뷰 생성
+   * @param webtoonId - 리뷰를 작성할 웹툰의 ID
+   * @param reviewCreateDTO - 리뷰 생성 DTO (rating, comment 등)
+   * @returns 생성된 리뷰 객체 (성공 시), 에러 메시지 (실패 시)
+   */
   public async createWebtoonReview(
     webtoonId: number, 
     reviewCreateDTO: ReviewRequest
@@ -37,7 +42,11 @@ class WebtoonReviewService {
     }
   }
 
-  // 특정 리뷰 가져오기
+  /**
+   * 특정 리뷰 단건 조회
+   * @param reviewId - 조회할 리뷰의 ID
+   * @returns 리뷰 객체 (성공 시), 에러 메시지 (실패 시)
+   */
   public async getWebtoonReviewById(
     reviewId: number
   ): Promise<Response<Review>> {
@@ -53,7 +62,12 @@ class WebtoonReviewService {
     }
   }
 
-  // 리뷰 수정
+  /**
+   * 리뷰 수정
+   * @param reviewId - 수정할 리뷰의 ID
+   * @param reviewCreateDTO - 수정할 내용 (별점, 코멘트 등)
+   * @returns 수정된 리뷰 객체 (성공 시), 에러 메시지 (실패 시)
+   */
   public async updateWebtoonReview(
     reviewId: number, 
     reviewCreateDTO: ReviewRequest
@@ -70,7 +84,11 @@ class WebtoonReviewService {
     }
   }
 
-  // 리뷰 삭제
+  /**
+   * 리뷰 삭제
+   * @param reviewId - 삭제할 리뷰의 ID
+   * @returns 성공 여부 및 메시지
+   */
   public async deleteWebtoonReview(
     reviewId: number
   ): Promise<Response<void>> {
@@ -83,7 +101,11 @@ class WebtoonReviewService {
     }
   }
 
-  // 좋아요 토글
+  /**
+   * 리뷰 좋아요 토글 (좋아요/좋아요 취소)
+   * @param reviewId - 좋아요 토글할 리뷰의 ID
+   * @returns 성공 여부 및 메시지
+   */
   public async toggleLikeForReview(
     reviewId: number
   ): Promise<Response<void>> {
@@ -96,7 +118,11 @@ class WebtoonReviewService {
     }
   }
 
-  // 사용자가 특정 웹툰에 작성한 리뷰 조회
+  /**
+   * 사용자가 특정 웹툰에 작성한 리뷰 단건 조회
+   * @param webtoonId - 웹툰 ID
+   * @returns 해당 유저가 작성한 리뷰 (없으면 null)
+   */
   public async getUserReviewForWebtoon(webtoonId: number): Promise<Response<Review>> {
     if (isDev) {
       return { success: true, data: dummyReview };
@@ -110,7 +136,14 @@ class WebtoonReviewService {
     }
   }
 
-  // 특정 웹툰의 리뷰 목록 가져오기
+  /**
+   * 특정 웹툰의 리뷰 목록 조회 (페이징/정렬 지원)
+   * @param webtoonId - 리뷰를 조회할 웹툰의 ID
+   * @param sortBy - 정렬 기준 (ex: 'latest', 'rating')
+   * @param page - 페이지 번호 (0부터 시작)
+   * @param size - 페이지당 리뷰 개수
+   * @returns 리뷰 목록, 전체 개수, 페이징 정보 등
+   */
   public async getReviewsByWebtoon(
     webtoonId: number, 
     sortBy: string = 'latest', 
@@ -131,7 +164,7 @@ class WebtoonReviewService {
       const response = await api.get<PagedResponse<Review[]>>(
         `/api/public/reviews/webtoon/${webtoonId}?sortBy=${sortBy}&page=${page}&size=${size}`
       );
-      // 응답 데이터 구조 검증
+      // 응답 데이터 구조 검증 및 페이징 정보 반환
       const { data, totalElements, page: currentPage, size: pageSize, last } = response.data || {};
       
       return {

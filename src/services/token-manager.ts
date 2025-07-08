@@ -1,9 +1,11 @@
+// 액세스 토큰을 localStorage에 저장할 때 사용하는 키
 const ACCESS_TOKEN_KEY = 'accessToken';
+
 
 export const TokenManager = {
   /**
-   * Store access token in localStorage.
-   * @param token - The access token to store.
+   * 액세스 토큰을 localStorage에 저장
+   * @param token - 저장할 액세스 토큰 문자열
    */
   setAccessToken: (token: string): void => {
     try {
@@ -14,8 +16,8 @@ export const TokenManager = {
   },
 
   /**
-   * Retrieve the access token from localStorage.
-   * @returns The access token, or null if not found.
+   * localStorage에서 액세스 토큰 조회
+   * @returns 액세스 토큰 문자열 또는 null
    */
   getAccessToken: (): string | null => {
     try {
@@ -27,7 +29,7 @@ export const TokenManager = {
   },
 
   /**
-   * Remove the access token from localStorage.
+   * localStorage에서 액세스 토큰 삭제
    */
   clearAccessToken: (): void => {
     try {
@@ -38,7 +40,8 @@ export const TokenManager = {
   },
 
   /**
-   * Remove the refresh token from localStorage.
+   * (확장 예정) 리프레시 토큰 삭제
+   * - 현재는 실제 삭제 로직 없음, 서버 연동 필요
    */
   clearRefreshToken: (): void => {
     try {
@@ -49,9 +52,9 @@ export const TokenManager = {
   },
 
   /**
-   * Check if the access token is expired.
-   * @param token - The access token to check.
-   * @returns True if the token is expired or invalid, false otherwise.
+   * 액세스 토큰 만료 여부 검사
+   * @param token - 검사할 액세스 토큰
+   * @returns 만료/무효(true), 유효(false)
    */
   isAccessTokenExpired: (token: string): boolean => {
     try {
@@ -68,9 +71,9 @@ export const TokenManager = {
   },
 
   /**
-   * Extract the access token from the Authorization header.
-   * @param headers - The headers object, typically from an HTTP response.
-   * @returns The extracted access token, or null if not found.
+   * HTTP 응답 헤더에서 액세스 토큰 추출
+   * @param headers - HTTP 응답 헤더 객체
+   * @returns 추출된 액세스 토큰 문자열 또는 null
    */
   extractAccessTokenFromHeader: (headers: Record<string, any>): string | null => {
     try {
@@ -90,9 +93,9 @@ export const TokenManager = {
   },
 
   /**
-   * Decode the payload of a JWT token.
-   * @param token - The JWT token to decode.
-   * @returns The decoded payload as an object, or null if decoding fails.
+   * JWT 토큰의 payload(내용) 디코딩
+   * @param token - 디코딩할 JWT 토큰
+   * @returns 디코딩된 payload 객체 또는 null
    */
   decodeTokenPayload: (token: string): Record<string, any> | null => {
     try {

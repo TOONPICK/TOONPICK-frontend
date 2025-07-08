@@ -1,15 +1,20 @@
 import { Response } from '@api/types';
 import { Collection, CollectionCreateRequest, CollectionUpdateRequest } from '@models/collection';
 import { dummyCollections } from '@dummy/collection-dummy';
+import handleApiError from '@utils/api-error-handler';
+
+const isDev = process.env.NODE_ENV === 'development';
 
 class CollectionService {
   private baseUrl = process.env.REACT_APP_API_BASE_URL || '';
 
-  // 컬렉션 목록 조회
+  /**
+   * 컬렉션 목록 조회
+   * @returns Collection[] (성공 시), 에러 메시지 (실패 시)
+   */
   async getCollections(): Promise<Response<Collection[]>> {
     try {
-      if (process.env.NODE_ENV === 'development') {
-        // 개발 환경에서는 더미 데이터 반환
+      if (isDev) {
         return {
           success: true,
           data: dummyCollections,
@@ -36,19 +41,18 @@ class CollectionService {
         message: '컬렉션 목록을 성공적으로 불러왔습니다.'
       };
     } catch (error) {
-      console.error('Error fetching collections:', error);
-      return {
-        success: false,
-        message: '컬렉션 목록을 불러오는데 실패했습니다.'
-      };
+      return handleApiError(error);
     }
   }
 
-  // 컬렉션 상세 조회
+  /**
+   * 컬렉션 상세 조회
+   * @param id - 조회할 컬렉션 ID
+   * @returns Collection 객체 (성공 시), 에러 메시지 (실패 시)
+   */
   async getCollectionById(id: number): Promise<Response<Collection>> {
     try {
-      if (process.env.NODE_ENV === 'development') {
-        // 개발 환경에서는 더미 데이터에서 찾기
+      if (isDev) {
         const collection = dummyCollections.find((c: Collection) => c.id === id);
         if (!collection) {
           return {
@@ -82,19 +86,18 @@ class CollectionService {
         message: '컬렉션을 성공적으로 불러왔습니다.'
       };
     } catch (error) {
-      console.error('Error fetching collection:', error);
-      return {
-        success: false,
-        message: '컬렉션을 불러오는데 실패했습니다.'
-      };
+      return handleApiError(error);
     }
   }
 
-  // 컬렉션 생성
+  /**
+   * 컬렉션 생성
+   * @param request - 생성할 컬렉션 정보 (이름, 설명, 공개여부 등)
+   * @returns 생성된 Collection 객체 (성공 시), 에러 메시지 (실패 시)
+   */
   async createCollection(request: CollectionCreateRequest): Promise<Response<Collection>> {
     try {
-      if (process.env.NODE_ENV === 'development') {
-        // 개발 환경에서는 더미 데이터로 시뮬레이션
+      if (isDev) {
         const newCollection: Collection = {
           id: Math.max(...dummyCollections.map((c: Collection) => c.id)) + 1,
           name: request.name,
@@ -108,7 +111,6 @@ class CollectionService {
           webtoons: []
         };
         
-        // 실제로는 더미 데이터에 추가하지 않음 (메모리에서만)
         return {
           success: true,
           data: newCollection,
@@ -136,19 +138,19 @@ class CollectionService {
         message: '컬렉션이 성공적으로 생성되었습니다.'
       };
     } catch (error) {
-      console.error('Error creating collection:', error);
-      return {
-        success: false,
-        message: '컬렉션 생성에 실패했습니다.'
-      };
+      return handleApiError(error);
     }
   }
 
-  // 컬렉션 수정
+  /**
+   * 컬렉션 수정
+   * @param id - 수정할 컬렉션 ID
+   * @param request - 수정할 정보
+   * @returns 수정된 Collection 객체 (성공 시), 에러 메시지 (실패 시)
+   */
   async updateCollection(id: number, request: CollectionUpdateRequest): Promise<Response<Collection>> {
     try {
-      if (process.env.NODE_ENV === 'development') {
-        // 개발 환경에서는 더미 데이터로 시뮬레이션
+      if (isDev) {
         const collectionIndex = dummyCollections.findIndex((c: Collection) => c.id === id);
         if (collectionIndex === -1) {
           return {
@@ -166,7 +168,6 @@ class CollectionService {
           updatedAt: new Date().toISOString()
         };
 
-        // 실제로는 더미 데이터를 업데이트하지 않음 (메모리에서만)
         return {
           success: true,
           data: updatedCollection,
@@ -194,19 +195,18 @@ class CollectionService {
         message: '컬렉션이 성공적으로 수정되었습니다.'
       };
     } catch (error) {
-      console.error('Error updating collection:', error);
-      return {
-        success: false,
-        message: '컬렉션 수정에 실패했습니다.'
-      };
+      return handleApiError(error);
     }
   }
 
-  // 컬렉션 삭제
+  /**
+   * 컬렉션 삭제
+   * @param id - 삭제할 컬렉션 ID
+   * @returns 성공 여부 및 메시지
+   */
   async deleteCollection(id: number): Promise<Response<void>> {
     try {
-      if (process.env.NODE_ENV === 'development') {
-        // 개발 환경에서는 더미 데이터로 시뮬레이션
+      if (isDev) {
         const collectionIndex = dummyCollections.findIndex((c: Collection) => c.id === id);
         if (collectionIndex === -1) {
           return {
@@ -215,7 +215,6 @@ class CollectionService {
           };
         }
 
-        // 실제로는 더미 데이터에서 삭제하지 않음 (메모리에서만)
         return {
           success: true,
           message: '컬렉션이 성공적으로 삭제되었습니다.'
@@ -239,19 +238,19 @@ class CollectionService {
         message: '컬렉션이 성공적으로 삭제되었습니다.'
       };
     } catch (error) {
-      console.error('Error deleting collection:', error);
-      return {
-        success: false,
-        message: '컬렉션 삭제에 실패했습니다.'
-      };
+      return handleApiError(error);
     }
   }
 
-  // 웹툰을 컬렉션에 추가
+  /**
+   * 웹툰을 컬렉션에 추가
+   * @param collectionId - 컬렉션 ID
+   * @param webtoonId - 추가할 웹툰 ID
+   * @returns 성공 여부 및 메시지
+   */
   async addWebtoonToCollection(collectionId: number, webtoonId: number): Promise<Response<void>> {
     try {
-      if (process.env.NODE_ENV === 'development') {
-        // 개발 환경에서는 더미 데이터로 시뮬레이션
+      if (isDev) {
         const collection = dummyCollections.find((c: Collection) => c.id === collectionId);
         if (!collection) {
           return {
@@ -260,7 +259,6 @@ class CollectionService {
           };
         }
 
-        // 실제로는 더미 데이터를 업데이트하지 않음 (메모리에서만)
         return {
           success: true,
           message: '웹툰이 컬렉션에 성공적으로 추가되었습니다.'
@@ -285,19 +283,19 @@ class CollectionService {
         message: '웹툰이 컬렉션에 성공적으로 추가되었습니다.'
       };
     } catch (error) {
-      console.error('Error adding webtoon to collection:', error);
-      return {
-        success: false,
-        message: '웹툰 추가에 실패했습니다.'
-      };
+      return handleApiError(error);
     }
   }
 
-  // 웹툰을 컬렉션에서 제거
+  /**
+   * 웹툰을 컬렉션에서 제거
+   * @param collectionId - 컬렉션 ID
+   * @param webtoonId - 제거할 웹툰 ID
+   * @returns 성공 여부 및 메시지
+   */
   async removeWebtoonFromCollection(collectionId: number, webtoonId: number): Promise<Response<void>> {
     try {
-      if (process.env.NODE_ENV === 'development') {
-        // 개발 환경에서는 더미 데이터로 시뮬레이션
+      if (isDev) {
         const collection = dummyCollections.find((c: Collection) => c.id === collectionId);
         if (!collection) {
           return {
@@ -306,7 +304,6 @@ class CollectionService {
           };
         }
 
-        // 실제로는 더미 데이터를 업데이트하지 않음 (메모리에서만)
         return {
           success: true,
           message: '웹툰이 컬렉션에서 성공적으로 제거되었습니다.'
@@ -330,11 +327,7 @@ class CollectionService {
         message: '웹툰이 컬렉션에서 성공적으로 제거되었습니다.'
       };
     } catch (error) {
-      console.error('Error removing webtoon from collection:', error);
-      return {
-        success: false,
-        message: '웹툰 제거에 실패했습니다.'
-      };
+      return handleApiError(error);
     }
   }
 }
